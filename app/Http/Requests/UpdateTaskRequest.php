@@ -22,7 +22,7 @@ class UpdateTaskRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => 'sometimes|required|string',
+            'title' => 'sometimes|required|string||max:255',
             'description' => 'sometimes|nullable|string',
             'status' => ['sometimes', new Enum(TaskStatus::class)],
         ];
@@ -31,7 +31,8 @@ class UpdateTaskRequest extends FormRequest
     public function messages()
     {
         return [
-            'title' => 'Title is required',
+            'title.required' => 'Title is required',
+            'status.enum' => 'Invalid status value',
         ];
     }
 }

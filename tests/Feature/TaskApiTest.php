@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\Task;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class TaskApiTest extends TestCase
@@ -25,7 +24,7 @@ class TaskApiTest extends TestCase
         ]);
 
         $response->assertStatus(201)
-        ->assertJsonPath('data.title', 'Test task');
+            ->assertJsonPath('data.title', 'Test task');
     }
 
     public function test_title_is_required(): void
@@ -35,7 +34,7 @@ class TaskApiTest extends TestCase
         ]);
 
         $response->assertStatus(422)
-        ->assertJsonValidationErrors('title');
+            ->assertJsonValidationErrors('title');
     }
 
     public function test_can_update_task(): void
@@ -58,6 +57,4 @@ class TaskApiTest extends TestCase
 
         $response->assertStatus(204);
     }
-
-    
 }
