@@ -42,7 +42,7 @@ class TaskApiTest extends TestCase
         $task = Task::factory()->create();
 
         $response = $this->putJson("/api/tasks/{$task->id}", [
-            'title' => 'Updated'
+            'title' => 'Updated',
         ]);
 
         $response->assertStatus(200)
