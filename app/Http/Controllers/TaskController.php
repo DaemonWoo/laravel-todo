@@ -7,17 +7,43 @@ use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Facades\Cache;
 
 class TaskController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(): AnonymousResourceCollection
+    public function index(Request $request): AnonymousResourceCollection
     {
-        return TaskResource::collection(Task::paginate(20));
+        $page = $request->query('page', 1);
+
+        $tasks = Cache::remember(
+            "tasks_page_$page",
+            60,
+            function () {
+                return Task::paginate(20);
+            },
+        );
+
+        return TaskResource::collection($tasks);
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Task $task): TaskResource
+    {
+        $task = Cache::remember(
+            "task_$task->id",
+            60,
+            fn () => Task::findOrFail($task->id),
+        );
+
+        return new TaskResource($task);
     }
 
     /**
@@ -27,17 +53,11 @@ class TaskController extends Controller
     {
         $task = Task::create($request->validated());
 
+        Cache::flush();
+
         return (new TaskResource($task))
             ->response()
             ->setStatusCode(201);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Task $task): TaskResource
-    {
-        return new TaskResource($task);
     }
 
     /**
@@ -47,6 +67,9 @@ class TaskController extends Controller
     {
         $task->update($request->validated());
 
+        Cache::forget("task_$task->id");
+        Cache::flush();
+
         return new TaskResource($task);
     }
 
@@ -55,6 +78,9 @@ class TaskController extends Controller
      */
     public function destroy(Task $task): HttpResponse
     {
+        Cache::forget("task_$task->id");
+        Cache::flush();
+
         $task->delete();
 
         return response()->noContent();
